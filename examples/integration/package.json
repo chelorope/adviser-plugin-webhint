@@ -1,0 +1,14 @@
+{
+  "name": "integration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "check": "adviser --verbose --debug"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "adviser": "^0.7.4",
+    "adviser-plugin-lighthouse": "file:../.."
+  }
+}

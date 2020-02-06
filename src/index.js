@@ -4,12 +4,12 @@ const path = require('path');
 const fs = require('fs');
 
 const requireIndex = require('requireindex');
-const chromeLauncher = require('chrome-launcher');
-const lighthouse = require('lighthouse');
 const isURL = require('is-url');
 const Adviser = require('adviser');
+const Webhint = require('hint');
+const { Analyzer } = Webhint;
 
-class LighthousePlugin extends Adviser.Plugin {
+class WebhintPlugin extends Adviser.Plugin {
   constructor(settings) {
     super(settings);
 
@@ -25,7 +25,6 @@ class LighthousePlugin extends Adviser.Plugin {
 
   async preRun(context) {
     let config = null;
-
     if (this.configPath) {
       const fullConfigPath = path.join(context.filesystem.dirname, this.configPath);
 
@@ -41,27 +40,23 @@ class LighthousePlugin extends Adviser.Plugin {
     }
 
     try {
-      const chromeOptions = { chromeFlags: ['--show-paint-rects'] };
-      const chrome = await chromeLauncher.launch(chromeOptions);
+      const webhint = Analyzer.create(config, this.options);
+      const results = await webhint.analyze(this.url, this.options);
 
-      const options = { ...this.options, port: chrome.port };
-      const results = await lighthouse(this.url, options, config);
-      await chrome.kill();
-
-      if (!results.lhr) {
+      if (!results.length) {
         throw new Error('No results returned.');
       }
 
-      context.addShareableData(results.lhr);
+      context.addShareableData(results);
     } catch (error) {
-      throw new Error(`Lighthouse couldn't run, ${error}`);
+      throw new Error(`Webhint couldn't run, ${error}`);
     }
   }
 }
 
-LighthousePlugin.meta = {
-  description: 'Adviser plugin wrapper of lighthouse',
+WebhintPlugin.meta = {
+  description: 'Adviser plugin wrapper of webhint',
   recommended: true
 };
 
-module.exports = LighthousePlugin;
+module.exports = WebhintPlugin;

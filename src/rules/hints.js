@@ -9,11 +9,14 @@ class Hints extends Adviser.Rule {
   }
 
   async run(sandbox) {
+    const report = {};
     this.results.forEach(result => {
+      report.message = `${result.problems.length} webhint hint${result.problems.length > 1 ? 's' : ''} failed`;
       result.problems.forEach(problem => {
-        sandbox.report({ message: problem });
+        report.verbose += `${problem.category}: ${problem.message} - ${problem.severity}\n  `;
       });
     });
+    sandbox.report(report);
   }
 }
 
